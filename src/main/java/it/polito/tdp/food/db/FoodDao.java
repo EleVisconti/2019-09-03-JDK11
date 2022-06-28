@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.polito.tdp.food.model.Adiacenza;
 import it.polito.tdp.food.model.Condiment;
 import it.polito.tdp.food.model.Food;
 import it.polito.tdp.food.model.Portion;
@@ -75,7 +77,7 @@ public class FoodDao {
 	}
 	
 	public List<Portion> listAllPortions(){
-		String sql = "SELECT * FROM portion" ;
+		String sql = "SELECT * FROM food_pyramid_mod.portion" ;
 		try {
 			Connection conn = DBConnect.getConnection() ;
 
@@ -109,6 +111,102 @@ public class FoodDao {
 
 	}
 	
+	public List<String> getTipoPorzione(){
+		String sql = "SELECT DISTINCT portion_display_name AS tipo_porzione "
+				+ "FROM food_pyramid_mod.portion ORDER BY tipo_porzione" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			List<String> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				try {
+					list.add(res.getString("tipo_porzione"));
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+
+	}
+	
+	public List<String> getVertex(int cal){
+		String sql = "SELECT DISTINCT portion_display_name AS tipo_porzione\r\n"
+				+ "FROM food_pyramid_mod.portion\r\n"
+				+ "WHERE calories < ?" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, cal);
+			List<String> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				try {
+					list.add(res.getString("tipo_porzione"));
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+
+	}
+	
+	
+	public List<Adiacenza> getArchi(){
+		String sql = "SELECT P1.portion_display_name AS tipo1, P2.portion_display_name AS tipo2, COUNT(DISTINCT P1.food_code) AS CNT " + 
+				"FROM food_pyramid_mod.portion P1, food_pyramid_mod.portion P2 " + 
+				"WHERE P1.food_code=P2.food_code " + 
+				"AND P1.portion_display_name<>P2.portion_display_name " + 
+				"GROUP BY P1.portion_display_name, P2.portion_display_name";
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			List<Adiacenza> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				try {
+					Adiacenza a = new Adiacenza(res.getString("tipo1"), res.getString("tipo2"), res.getInt("CNT"));
+					list.add(a);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+
+	}
+	
+
 	
 
 }

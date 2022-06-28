@@ -40,29 +40,45 @@ public class FoodController {
     private Button btnCammino; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxPorzioni"
-    private ComboBox<?> boxPorzioni; // Value injected by FXMLLoader
+    private ComboBox<String> boxPorzioni; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
 
     @FXML
     void doCammino(ActionEvent event) {
+    	String res="";
     	txtResult.clear();
     	txtResult.appendText("Cerco cammino peso massimo...");
+    	String p = boxPorzioni.getValue();
+    	int n = Integer.parseInt(txtPassi.getText());
+    	this.model.cercaCammino(p, n);
+    	txtResult.appendText("\n peso max: "+this.model.getPesoMax()+"\n cammino:\n");
+    	for(String s : this.model.getCamminoMax()) {
+    		res+=s+"\n";
+    	}
+    	txtResult.appendText(res);
     }
 
     @FXML
     void doCorrelate(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco porzioni correlate...");
+    	txtResult.appendText("Cerco porzioni correlate...\n");
+    	String tipo = boxPorzioni.getValue();
+    	txtResult.appendText(this.model.getDirette(tipo));
     	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
-    	
+    	txtResult.appendText("Creazione grafo...\n");
+    	int cal = Integer.parseInt(txtCalorie.getText());
+    	this.model.creaGrafo(cal);
+    	txtResult.appendText("# VERTICI: "+this.model.nVertici() + "\n");
+        txtResult.appendText("# ARCHI: "+this.model.nArchi() + "\n");
+        boxPorzioni.getItems().clear();
+    	boxPorzioni.getItems().addAll(this.model.getVertici());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -79,5 +95,7 @@ public class FoodController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	boxPorzioni.getItems().clear();
+    	boxPorzioni.getItems().addAll(this.model.getTipoPorzione());
     }
 }
